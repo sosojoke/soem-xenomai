@@ -41,7 +41,7 @@ typedef double              float64;
 #ifndef PACKED
     #ifdef _MSC_VER
     #define PACKED_BEGIN __pragma(pack(push, 1))
-    #define PACKED 
+    #define PACKED
     #define PACKED_END __pragma(pack(pop))
     #elif defined(__GNUC__)
     #define PACKED_BEGIN
@@ -65,5 +65,6 @@ void osal_timer_start (osal_timert * self, uint32 timeout_us);
 boolean osal_timer_is_expired (const osal_timert * self);
 int osal_usleep (uint32 usec);
 ec_timet osal_current_time (void);
+uint64_t osal_current_time_ns (void);
 
 #endif

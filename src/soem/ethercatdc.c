@@ -1,12 +1,12 @@
 /*
- * Simple Open EtherCAT Master Library 
+ * Simple Open EtherCAT Master Library
  *
  * File    : ethercatdc.c
  * Version : 1.3.0
  * Date    : 24-02-2013
  * Copyright (C) 2005-2013 Speciaal Machinefabriek Ketels v.o.f.
  * Copyright (C) 2005-2013 Arthur Ketels
- * Copyright (C) 2008-2009 TU/e Technische Universiteit Eindhoven 
+ * Copyright (C) 2008-2009 TU/e Technische Universiteit Eindhoven
  *
  * SOEM is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License version 2 as published by the Free
@@ -40,7 +40,7 @@
 
 /** \file
  * \brief
- * Distributed Clock EtherCAT functions. 
+ * Distributed Clock EtherCAT functions.
  *
  */
 #include "oshw.h"
@@ -78,7 +78,7 @@ void ecx_dcsync0(ecx_contextt *context, uint16 slave, boolean act, uint32 CyclTi
    RA = 0;
 
    /* stop cyclic operation, ready for next trigger */
-   wc = ecx_FPWR(context->port, slaveh, ECT_REG_DCSYNCACT, sizeof(RA), &RA, EC_TIMEOUTRET); 
+   wc = ecx_FPWR(context->port, slaveh, ECT_REG_DCSYNCACT, sizeof(RA), &RA, EC_TIMEOUTRET);
    if (act)
    {
        RA = 1 + 2;    /* act cyclic operation and sync0, sync1 deactivated */
@@ -131,7 +131,7 @@ void ecx_dcsync01(ecx_contextt *context, uint16 slave, boolean act, uint32 CyclT
    RA = 0;
 
    /* stop cyclic operation, ready for next trigger */
-   wc = ecx_FPWR(context->port, slaveh, ECT_REG_DCSYNCACT, sizeof(RA), &RA, EC_TIMEOUTRET); 
+   wc = ecx_FPWR(context->port, slaveh, ECT_REG_DCSYNCACT, sizeof(RA), &RA, EC_TIMEOUTRET);
    if (act)
    {
       RA = 1 + 2 + 4;    /* act cyclic operation and sync0 + sync1 */
@@ -226,7 +226,7 @@ static uint8 ecx_prevport(ecx_contextt *context, uint16 slave, uint8 port)
          else if (aport & PORTM1)
             pport = 1;
          break;
-   }      
+   }
    return pport;
 }
 
@@ -273,7 +273,7 @@ boolean ecx_configdc(ecx_contextt *context)
    uint16 parenthold = 0;
    uint16 prevDCslave = 0;
    int32 ht, dt1, dt2, dt3;
-   int64 hrt;
+   int64 hrt, master_time;
    uint8 entryport;
    int8 nlist;
    int8 plist[4];
@@ -282,6 +282,7 @@ boolean ecx_configdc(ecx_contextt *context)
    context->slavelist[0].hasdc = FALSE;
    context->grouplist[0].hasdc = FALSE;
    ht = 0;
+   master_time = osal_current_time_ns();
    ecx_BWR(context->port, 0, ECT_REG_DCTIME0, sizeof(ht), &ht, EC_TIMEOUTRET);  /* latch DCrecvTimeA of all slaves */
    for (i = 1; i <= *(context->slavecount); i++)
    {
@@ -309,8 +310,8 @@ boolean ecx_configdc(ecx_contextt *context)
          context->slavelist[i].DCrtA = etohl(ht);
          /* 64bit latched DCrecvTimeA of each specific slave */
          wc = ecx_FPRD(context->port, slaveh, ECT_REG_DCSOF, sizeof(hrt), &hrt, EC_TIMEOUTRET);
-         /* use it as offset in order to set local time around 0 */
-         hrt = htoell(-etohll(hrt));
+         /* use it as offset in order to set local time around master_time */
+         hrt = htoell(master_time - etohll(hrt));
          /* save it in the offset register */
          wc = ecx_FPWR(context->port, slaveh, ECT_REG_DCSYSOFFSET, sizeof(hrt), &hrt, EC_TIMEOUTRET);
          wc = ecx_FPRD(context->port, slaveh, ECT_REG_DCTIME1, sizeof(ht), &ht, EC_TIMEOUTRET);
@@ -322,25 +323,25 @@ boolean ecx_configdc(ecx_contextt *context)
 
          /* make list of active ports and their time stamps */
          nlist = 0;
-         if (context->slavelist[i].activeports & PORTM0) 
+         if (context->slavelist[i].activeports & PORTM0)
          {
             plist[nlist] = 0;
             tlist[nlist] = context->slavelist[i].DCrtA;
             nlist++;
          }
-         if (context->slavelist[i].activeports & PORTM3) 
+         if (context->slavelist[i].activeports & PORTM3)
          {
             plist[nlist] = 3;
             tlist[nlist] = context->slavelist[i].DCrtD;
             nlist++;
          }
-         if (context->slavelist[i].activeports & PORTM1) 
+         if (context->slavelist[i].activeports & PORTM1)
          {
             plist[nlist] = 1;
             tlist[nlist] = context->slavelist[i].DCrtB;
             nlist++;
          }
-         if (context->slavelist[i].activeports & PORTM2) 
+         if (context->slavelist[i].activeports & PORTM2)
          {
             plist[nlist] = 2;
             tlist[nlist] = context->slavelist[i].DCrtC;
@@ -351,7 +352,7 @@ boolean ecx_configdc(ecx_contextt *context)
          if((nlist > 1) && (tlist[1] < tlist[entryport]))
          {
             entryport = 1;
-         }         
+         }
          if((nlist > 2) && (tlist[2] < tlist[entryport]))
          {
             entryport = 2;
@@ -389,13 +390,13 @@ boolean ecx_configdc(ecx_contextt *context)
             /* note: order of ports is 0 - 3 - 1 -2 */
             /* non active ports are skipped */
             dt3 = ecx_porttime(context, parent, context->slavelist[i].parentport) -
-                  ecx_porttime(context, parent, 
+                  ecx_porttime(context, parent,
                     ecx_prevport(context, parent, context->slavelist[i].parentport));
             /* current slave has children */
             /* those childrens delays need to be substacted */
             if (context->slavelist[i].topology > 1)
             {
-               dt1 = ecx_porttime(context, i, 
+               dt1 = ecx_porttime(context, i,
                         ecx_prevport(context, i, context->slavelist[i].entryport)) -
                      ecx_porttime(context, i, context->slavelist[i].entryport);
             }
@@ -405,7 +406,7 @@ boolean ecx_configdc(ecx_contextt *context)
             /* previous childs delays need to be added */
             if ((child - parent) > 1)
             {
-               dt2 = ecx_porttime(context, parent, 
+               dt2 = ecx_porttime(context, parent,
                         ecx_prevport(context, parent, context->slavelist[i].parentport)) -
                      ecx_porttime(context, parent, context->slavelist[parent].entryport);
             }
@@ -442,6 +443,40 @@ boolean ecx_configdc(ecx_contextt *context)
    return context->slavelist[0].hasdc;
 }
 
+/**
+ * Synchronize bus clock with master.
+ *
+ * @param[in]  context        = context struct
+ */
+void ecx_dcsyncmaster(ecx_contextt *context)
+{
+  uint16_t slaveh;
+  uint64_t master_time;
+  if(context->slavelist[0].hasdc == TRUE)
+  {
+    slaveh = context->slavelist[context->slavelist[0].DCnext].configadr;
+    master_time = osal_current_time_ns();
+    ecx_FPWR(context->port, slaveh, ECT_REG_DCSYSTIME, sizeof(master_time), &master_time, EC_TIMEOUTRET);
+  }
+}
+
+/**
+ * Synchronize slaves with bus clock.
+ *
+ * @param[in]  context        = context struct
+ */
+void ecx_dcsyncslaves(ecx_contextt *context)
+{
+  uint16_t slaveh;
+  uint64_t master_time = 0;
+
+  if(context->slavelist[0].hasdc == TRUE)
+  {
+    slaveh = context->slavelist[context->slavelist[0].DCnext].configadr;
+    ecx_FRMW(context->port, slaveh, ECT_REG_DCSYSTIME, sizeof(master_time), &master_time, EC_TIMEOUTRET);
+  }
+}
+
 #ifdef EC_VER1
 void ec_dcsync0(uint16 slave, boolean act, uint32 CyclTime, uint32 CyclShift)
 {
@@ -456,5 +491,15 @@ void ec_dcsync01(uint16 slave, boolean act, uint32 CyclTime0, uint32 CyclTime1, 
 boolean ec_configdc(void)
 {
    return ecx_configdc(&ecx_context);
+}
+
+void ec_dcsyncmaster(void)
+{
+  ecx_dcsyncmaster(&ecx_context);
+}
+
+void ec_dcsyncslaves(void)
+{
+  ecx_dcsyncslaves(&ecx_context);
 }
 #endif

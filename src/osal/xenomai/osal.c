@@ -46,6 +46,11 @@ ec_timet osal_current_time (void)
    return return_value;
 }
 
+uint64_t osal_current_time_ns (void)
+{
+   return rt_timer_ticks2ns(rt_timer_read());
+}
+
 void osal_timer_start (osal_timert * self, uint32 timeout_usec)
 {
    NANO_TIME start_time;

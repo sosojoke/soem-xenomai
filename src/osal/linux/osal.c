@@ -38,7 +38,7 @@ int osal_gettimeofday(struct timeval *tv, struct timezone *tz)
 {
    struct timespec ts;
    int return_value;
-   
+
    /* Use clock_gettime to prevent possible live-lock.
     * Gettimeofday uses CLOCK_REALTIME that can get NTP timeadjust.
     * If this function preempts timeadjust and it uses vpage it live-locks.
@@ -57,6 +57,17 @@ ec_timet osal_current_time (void)
    osal_gettimeofday (&current_time, 0);
    return_value.sec = current_time.tv_sec;
    return_value.usec = current_time.tv_usec;
+   return return_value;
+}
+
+uint64_t osal_current_time_ns (void)
+{
+   struct timespec ts;
+   uint64_t return_value;
+
+   clock_gettime (CLOCK_MONOTONIC, &ts);
+
+   return_value = ts.tv_nsec + ts.tv_sec * 1000000LL;
    return return_value;
 }
 
