@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+  <name>soem</name>
+  <version>0.0.0</version>
+  <description>The soem package</description>
+
+  <maintainer email="konradb3@gmail.com">Konrad Banachowicz</maintainer>
+  <maintainer email="dawid.seredynski@gmail.com">Dawid Seredynski</maintainer>
+  <license>BSD</license>
+
+  <author>Konrad Banachowicz</author>
+
+  <url>http://ros.org/wiki/soem</url>
+  
+  <buildtool_depend>catkin</buildtool_depend>
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <rtt_ros>
+    </rtt_ros>
+  </export>
+</package>
