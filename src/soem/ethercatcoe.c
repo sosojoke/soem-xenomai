@@ -866,8 +866,9 @@ int ecx_readPDOmap(ecx_contextt *context, uint16 Slave, int *Osize, int *Isize)
          wkc = ecx_SDOread(context, Slave, ECT_SDO_SMCOMMTYPE, iSM + 1, FALSE, &rdl, &tSM, EC_TIMEOUTRXM);
          if (wkc > 0)
          {
+            printf(" SM%d Type: %d\n", iSM, tSM);
 // start slave bug prevention code, remove if possible            
-            if((iSM == 2) && (tSM == 2)) // SM2 has type 2 == mailbox out, this is a bug in the slave!
+/*            if((iSM == 2) && (tSM == 2)) // SM2 has type 2 == mailbox out, this is a bug in the slave!
             {   
                SMt_bug_add = 1; // try to correct, this works if the types are 0 1 2 3 and should be 1 2 3 4
             }
@@ -882,7 +883,7 @@ int ecx_readPDOmap(ecx_contextt *context, uint16 Slave, int *Osize, int *Isize)
             if((iSM == 3) && (tSM == 0)) // SM3 has type 0, this is a bug in the slave!
             {   
                tSM = 4;
-            }
+            } */
 // end slave bug prevention code            
 
             context->slavelist[Slave].SMtype[iSM] = tSM;

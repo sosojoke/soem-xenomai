@@ -428,7 +428,7 @@ int ecx_config_init(ecx_contextt *context, uint8 usetable)
             /* SII general section */
             if (ssigen)
             {
-               context->slavelist[slave].CoEdetails = ecx_siigetbyte(context, slave, ssigen + 0x07);
+               context->slavelist[slave].CoEdetails = ecx_siigetbyte(context, slave, ssigen + 0x07) & (~ECT_COEDET_SDOCA);
                context->slavelist[slave].FoEdetails = ecx_siigetbyte(context, slave, ssigen + 0x08);
                context->slavelist[slave].EoEdetails = ecx_siigetbyte(context, slave, ssigen + 0x09);
                context->slavelist[slave].SoEdetails = ecx_siigetbyte(context, slave, ssigen + 0x0a);
@@ -581,11 +581,11 @@ int ecx_config_map_group(ecx_contextt *context, void *pIOmap, uint8 group)
                if (context->slavelist[slave].mbx_proto & ECT_MBXPROT_COE) /* has CoE */
                {
                   rval = 0;
-                  if (context->slavelist[slave].CoEdetails & ECT_COEDET_SDOCA) /* has Complete Access */
+                  //if (context->slavelist[slave].CoEdetails & ECT_COEDET_SDOCA) /* has Complete Access */
                      /* read PDO mapping via CoE and use Complete Access */
-                  {
-                     rval = ecx_readPDOmapCA(context, slave, &Osize, &Isize);
-                  }
+                  //{
+                  //   rval = ecx_readPDOmapCA(context, slave, &Osize, &Isize);
+                  //}
                   if (!rval) /* CA not available or not succeeded */
                   {
                      /* read PDO mapping via CoE */
