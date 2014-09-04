@@ -1,10 +1,15 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(soem)
 
+find_package(catkin REQUIRED COMPONENTS cmake_modules)
+
+find_package(Xenomai REQUIRED)
+
+
 catkin_package(
 	INCLUDE_DIRS src/soem src/osal src/oshw/${OROCOS_TARGET})
 
-include_directories(include ${catkin_INCLUDE_DIRS} ${BOOST_INCLUDE_DIRS} src/oshw/${OROCOS_TARGET} src/osal/${OROCOS_TARGET} src/soem src/osal)
+include_directories(include ${catkin_INCLUDE_DIRS} ${BOOST_INCLUDE_DIRS} ${Xenomai_INCLUDE_DIR} src/oshw/${OROCOS_TARGET} src/osal/${OROCOS_TARGET} src/soem src/osal /opt/rtnet/include)
 
 add_library(${PROJECT_NAME} SHARED src/osal/${OROCOS_TARGET}/osal.c src/oshw/${OROCOS_TARGET}/nicdrv.c src/oshw/${OROCOS_TARGET}/oshw.c src/soem/ethercatbase.c src/soem/ethercatcoe.c src/soem/ethercatconfig.c src/soem/ethercatdc.c src/soem/ethercatfoe.c src/soem/ethercatmain.c src/soem/ethercatprint.c src/soem/ethercatsoe.c)
 
@@ -21,7 +26,7 @@ if(${OROCOS_TARGET} STREQUAL "xenomai" )
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${XENO_LDFLAGS}")
   orocos_add_compile_flags(${PROJECT_NAME} ${XENO_CFLAGS})
   orocos_add_link_flags(${PROJECT_NAME} ${XENO_LDFLAGS})
-  TARGET_LINK_LIBRARIES(${PROJECT_NAME} "-lrtdm")
+  TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${Xenomai_RTDM_LIBRARIES})
 
 endif()
 #End of user code
