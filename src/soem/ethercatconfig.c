@@ -653,6 +653,8 @@ int ecx_config_map_group(ecx_contextt *context, void *pIOmap, uint8 group)
                    context->slavelist[slave].SM[1].SMflags);   
             }
             /* program SM2 to SMx */
+            context->slavelist[slave].SM[2].SMflags = 0x10004;
+            context->slavelist[slave].SM[3].SMflags = 0x10000;
             for( nSM = 2 ; nSM < EC_MAXSM ; nSM++ )
             {   
                if (context->slavelist[slave].SM[nSM].StartAddr)
@@ -665,9 +667,10 @@ int ecx_config_map_group(ecx_contextt *context, void *pIOmap, uint8 group)
                   }
                   ecx_FPWR(context->port, configadr, ECT_REG_SM0 + (nSM * sizeof(ec_smt)),
                      sizeof(ec_smt), &context->slavelist[slave].SM[nSM], EC_TIMEOUTRET3);
-                  EC_PRINT("    SM%d Type:%d StartAddr:%4.4x Flags:%8.8x\n", nSM,
-                      context->slavelist[slave].SMtype[nSM], 
-                      context->slavelist[slave].SM[nSM].StartAddr, 
+                  EC_PRINT("    SM%d Type:%d StartAddr:%4.4x Size:%4d Flags:%8.8x\n", nSM,
+                      context->slavelist[slave].SMtype[nSM],
+                      context->slavelist[slave].SM[nSM].StartAddr,
+                      context->slavelist[slave].SM[nSM].SMlength, 
                       context->slavelist[slave].SM[nSM].SMflags);   
                }
             }
@@ -767,6 +770,12 @@ int ecx_config_map_group(ecx_contextt *context, void *pIOmap, uint8 group)
                   /* program FMMU for output */
                   ecx_FPWR(context->port, configadr, ECT_REG_FMMU0 + (sizeof(ec_fmmut) * FMMUc),
                      sizeof(ec_fmmut), &(context->slavelist[slave].FMMU[FMMUc]), EC_TIMEOUTRET3);
+                     
+                  EC_PRINT("FMMU: LogAddr %8.8x, Size: %d, PhysAddr %8.8x\n",
+                    context->slavelist[slave].FMMU[FMMUc].LogStart,
+                    context->slavelist[slave].FMMU[FMMUc].LogLength,
+                    context->slavelist[slave].FMMU[FMMUc].PhysStart);
+                     
                   context->grouplist[group].outputsWKC++;
                   if (!context->slavelist[slave].outputs)
                   {   
@@ -928,6 +937,10 @@ int ecx_config_map_group(ecx_contextt *context, void *pIOmap, uint8 group)
                   /* program FMMU for input */
                   ecx_FPWR(context->port, configadr, ECT_REG_FMMU0 + (sizeof(ec_fmmut) * FMMUc), 
                      sizeof(ec_fmmut), &(context->slavelist[slave].FMMU[FMMUc]), EC_TIMEOUTRET3);
+                  EC_PRINT("FMMU: LogAddr %8.8x, Size: %d, PhysAddr %8.8x\n",
+                    context->slavelist[slave].FMMU[FMMUc].LogStart,
+                    context->slavelist[slave].FMMU[FMMUc].LogLength,
+                    context->slavelist[slave].FMMU[FMMUc].PhysStart);
                   /* add one for an input FMMU */
                   context->grouplist[group].inputsWKC++;
                }   
