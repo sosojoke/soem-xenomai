@@ -23,7 +23,7 @@
 #include <native/timer.h>
 
 #include <unistd.h>
-#include <osal.h>
+#include "osal.h"
 
 typedef SRTIME NANO_TIME;
 

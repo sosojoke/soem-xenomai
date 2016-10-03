@@ -27,7 +27,7 @@
  * This exception does not invalidate any other reasons why a work based on
  * this file might be covered by the GNU General Public License.
  *
- * The EtherCAT Technology, the trade name and logo "EtherCAT" are the intellectual
+ * The EtherCAT Technology, the trade name and logo “EtherCAT” are the intellectual
  * property of, and protected by Beckhoff Automation GmbH. You can use SOEM for
  * the sole purpose of creating, using and/or selling or otherwise distributing
  * an EtherCAT network master provided that an EtherCAT Master License is obtained
@@ -45,6 +45,14 @@
 
 #ifndef _nicdrvh_
 #define _nicdrvh_
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#include <native/mutex.h>
+#include "ethercattype.h"
 
 /** pointer structure to Tx and Rx stacks */
 typedef struct
@@ -109,9 +117,9 @@ typedef struct
    int redstate;
    /** pointer to redundancy port and buffers */
    ecx_redportt *redport;   
-   mtx_t * getindex_mutex;
-   mtx_t * tx_mutex;
-   mtx_t * rx_mutex;
+   RT_MUTEX getindex_mutex; 
+   RT_MUTEX tx_mutex;
+   RT_MUTEX rx_mutex;
 } ecx_portt;
 
 extern const uint16 priMAC[3];
@@ -140,5 +148,9 @@ int ecx_outframe(ecx_portt *port, int idx, int sock);
 int ecx_outframe_red(ecx_portt *port, int idx);
 int ecx_waitinframe(ecx_portt *port, int idx, int timeout);
 int ecx_srconfirm(ecx_portt *port, int idx,int timeout);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
